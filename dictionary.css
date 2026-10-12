@@ -1,0 +1,202 @@
+/* Simple styles for the dictionary page */
+body {
+    margin: 0;
+    padding: 20px;
+    background-color: #eaf3fb;
+    color: #222;
+    font-family: Arial, sans-serif;
+}
+
+.page {
+    max-width: 750px;
+    margin: 20px auto;
+    padding: 25px;
+    background-color: white;
+    border: 1px solid #c8d8e8;
+    border-radius: 8px;
+}
+
+header {
+    margin-bottom: 25px;
+}
+
+.eyebrow {
+    color: #286090;
+    font-size: 14px;
+}
+
+h1 {
+    margin-bottom: 8px;
+    color: #174a72;
+}
+
+.intro,
+.dialog-help {
+    color: #555;
+}
+
+button {
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 5px;
+    background-color: #286090;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #174a72;
+}
+
+.search-wrap {
+    display: block;
+    margin: 20px 0;
+}
+
+.search-icon {
+    display: none;
+}
+
+#search {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.list-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 25px 0 12px;
+}
+
+#entries {
+    display: grid;
+    gap: 12px;
+}
+
+.entry {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fafafa;
+}
+
+.entry-word {
+    margin: 0 0 8px;
+    color: #174a72;
+}
+
+.entry-definition {
+    margin: 0;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.delete-button {
+    align-self: flex-start;
+    background-color: #a94442;
+}
+
+.delete-button:hover {
+    background-color: #843534;
+}
+
+.empty-state {
+    padding: 25px;
+    border: 1px dashed #aaa;
+    color: #555;
+    text-align: center;
+}
+
+dialog {
+    width: 90%;
+    max-width: 450px;
+    padding: 20px;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+}
+
+.dialog-content {
+    padding: 5px;
+}
+
+.field {
+    display: block;
+    margin: 15px 0;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+.field input,
+.field textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+.field textarea {
+    min-height: 100px;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.cancel-button {
+    border: 1px solid #aaa;
+    background-color: #eee;
+    color: #222;
+}
+
+.cancel-button:hover {
+    background-color: #ddd;
+}
+
+#status {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    max-width: 350px;
+    padding: 12px 16px;
+    border-radius: 5px;
+    background-color: #286090;
+    color: white;
+}
+
+#status[hidden] {
+    display: none;
+}
+
+#status.error {
+    background-color: #a94442;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    .page {
+        margin: 5px auto;
+        padding: 18px;
+    }
+
+    .entry {
+        flex-direction: column;
+    }
+}

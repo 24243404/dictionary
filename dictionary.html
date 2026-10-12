@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#eaf3fb">
+    <title>My Dictionary</title>
+    <link rel="stylesheet" href="/dictionary.css">
+</head>
+<body>
+    <main class="page">
+        <header>
+            <div>
+                <p class="eyebrow">A small place for words</p>
+                <h1>Dictionary</h1>
+                <p class="intro">Look up a word, or save a new one for later.</p>
+            </div>
+            <button class="add-button" id="open-dialog" type="button">+ Add a word</button>
+        </header>
+        <label class="search-wrap">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input id="search" type="search" placeholder="Search words and definitions..." autocomplete="off"
+                   aria-label="Search words and definitions">
+        </label>
+        <div class="list-heading">
+            <h2>Your words</h2>
+            <span id="word-count" aria-live="polite"></span>
+        </div>
+        <section id="entries" aria-live="polite"  aria-label="Dictionary entries"></section>
+    </main>
+
+    <dialog id="entry-dialog">
+        <form class="dialog-content" id="entry-form">
+            <h2>Add a word</h2>
+            <p class="dialog-help">Give it a definition you’ll remember.</p>
+            <div class="field"> 
+                <label for="word">Word</label>
+                <input id="word" name="word" maxlength="100" required autocomplete="off">
+            </div>
+            <div class="field">
+                <label for="definition">Definition</label>
+                <textarea id="definition" name="definition" maxlength="2000" required></textarea>
+            </div>
+            <div class="dialog-actions">
+                <button class="cancel-button" id="cancel-dialog" type="button">Cancel</button>
+                <button class="save-button" type="submit">Save word</button>
+            </div>
+        </form>
+    </dialog>
+    <div id="status" role="status" hidden></div>
+
+    <script>
+        const entriesElement = document.getElementById("entries");
+        const searchInput = document.getElementById("search");
+        const wordCount = document.getElementById("word-count");
+        const dialog = document.getElementById("entry-dialog");
+        const form = document.getElementById("entry-form");
+        const statusElement = document.getElementById("status");
+        let entries = [];
+        let statusTimer;
+
+        async function request(url, options) {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                const message = await response.text();
+                throw new Error(message || "The request could not be completed.");
+            }
+            return response;
+        }
+
+        async function loadEntries() {
+            const response = await request("/api/entries");
+            entries = await response.json();
+            renderEntries();
+        }
+
+        function renderEntries() {
+            const query = searchInput.value.trim().toLocaleLowerCase();
+            const visibleEntries = entries.filter(entry =>
+                entry.word.toLocaleLowerCase().includes(query)
+                || entry.definition.toLocaleLowerCase().includes(query)
+            );
+            wordCount.textContent = query
+                ? `${visibleEntries.length} of ${entries.length} ${entries.length === 1 ? "word" : "words"}`
+                : `${entries.length} ${entries.length === 1 ? "word" : "words"}`;
+            entriesElement.replaceChildren();
+
+            if (visibleEntries.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "empty-state";
+                empty.textContent = entries.length === 0
+                    ? "Your dictionary is empty. Add a word to get started."
+                    : "No matching words. Try another search.";
+                entriesElement.append(empty);
+                return;
+            }
+
+            for (const entry of visibleEntries) {
+                const card = document.createElement("article");
+                card.className = "entry";
+                const text = document.createElement("div");
+                const word = document.createElement("h3");
+                word.className = "entry-word";
+                word.textContent = entry.word;
+                const definition = document.createElement("p");
+                definition.className = "entry-definition";
+                definition.textContent = entry.definition;
+                text.append(word, definition);
+
+                const remove = document.createElement("button");
+                remove.className = "delete-button";
+                remove.type = "button";
+                remove.textContent = "Remove";
+                remove.setAttribute("aria-label", `Remove ${entry.word}`);
+                remove.addEventListener("click", () => removeEntry(entry.word));
+                card.append(text, remove);
+                entriesElement.append(card);
+            }
+        }
+
+        function showStatus(message, isError = false) {
+            clearTimeout(statusTimer);
+            statusElement.textContent = message;
+            statusElement.classList.toggle("error", isError);
+            statusElement.hidden = false;
+            statusTimer = setTimeout(() => { statusElement.hidden = true; }, 3500);
+        }
+
+        document.getElementById("open-dialog").addEventListener("click", () => {
+            form.reset();
+            dialog.showModal();
+            document.getElementById("word").focus();
+        });
+        document.getElementById("cancel-dialog").addEventListener("click", () => dialog.close());
+        searchInput.addEventListener("input", renderEntries);
+
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+            const data = new URLSearchParams(new FormData(form));
+            try {
+                await request("/api/entries", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+                    body: data
+                });
+                dialog.close();
+                await loadEntries();
+                showStatus("Word saved.");
+            } catch (error) {
+                showStatus(error.message, true);
+            }
+        });
+
+        async function removeEntry(word) {
+            if (!confirm(`Remove “${word}” from your dictionary?`)) return;
+            try {
+                await request(`/api/entries?word=${encodeURIComponent(word)}`, { method: "DELETE" });
+                await loadEntries();
+                showStatus("Word removed.");
+            } catch (error) {
+                showStatus(error.message, true);
+            }
+        }
+
+        loadEntries().catch(error => showStatus(error.message, true));
+    </script>
+</body>
+</html>
